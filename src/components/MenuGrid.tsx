@@ -1,4 +1,4 @@
-import { Calendar, Clock, Car, Users, AlertTriangle } from "lucide-react";
+import { Calendar, Clock, Car, Users, AlertTriangle, Award } from "lucide-react";
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 
@@ -8,6 +8,7 @@ interface MenuItem {
   icon: React.ReactNode;
   color: string;
   shadow: string;
+  link: string;
   content: React.ReactNode;
 }
 
@@ -15,14 +16,15 @@ export function MenuGrid() {
   const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
   const [showEmergency, setShowEmergency] = useState(false);
 
-  const menuItems: MenuItem[] = [
+const menuItems: MenuItem[] = [
     { 
       id: "atividades",
       title: "Atividades", 
       icon: <Calendar className="w-12 h-12" />, 
       color: "bg-gradient-to-br from-[#0D4A5C] to-[#062935]",
       shadow: "shadow-lg",
-      content: "Consulte nossa programação completa de atividades para crianças e adolescentes durante as férias!"
+      content: "Consulte nossa programação completa de atividades para crianças e adolescentes durante as férias!",
+      link: "https://fazendadagrama.short.gy/proghome-atividades"
     },
     { 
       id: "horarios",
@@ -30,7 +32,8 @@ export function MenuGrid() {
       icon: <Clock className="w-12 h-12" />, 
       color: "bg-gradient-to-br from-[#C8D946] to-[#A4B837]",
       shadow: "shadow-lg",
-      content: "Confira os horários de funcionamento de todas as áreas de lazer do condomínio."
+      content: "Confira os horários de funcionamento de todas as áreas de lazer do condomínio.",
+      link: "https://fazendadagrama.short.gy/proghome-horarios"
     },
     { 
       id: "transito",
@@ -38,7 +41,8 @@ export function MenuGrid() {
       icon: <Car className="w-12 h-12" />, 
       color: "bg-gradient-to-br from-[#F5A542] to-[#E88B1A]",
       shadow: "shadow-lg",
-      content: "Informações sobre trânsito e estacionamento nas áreas comuns."
+      content: "Informações sobre trânsito e estacionamento nas áreas comuns.",
+      link: "https://fazendadagrama.short.gy/proghome-transito"
     },
     { 
       id: "contatos",
@@ -46,7 +50,18 @@ export function MenuGrid() {
       icon: <Users className="w-12 h-12" />, 
       color: "bg-gradient-to-br from-[#5D8456] to-[#3D5D36]",
       shadow: "shadow-lg",
-      content: "Lista de contatos importantes do condomínio, incluindo segurança e manutenção."
+      content: "Lista de contatos importantes do condomínio, incluindo segurança e manutenção.",
+      link: "https://fazendadagrama.short.gy/proghome-contatos"
+    },
+
+    { 
+      id: "detalhes",
+      title: "Detalhes (estrutura)", 
+      icon: <Award className="w-12 h-12" />, 
+      color: "bg-gradient-to-br from-[#0D4A5C] to-[#062935]",
+      shadow: "shadow-lg",
+      content: "Informações completas sobre a estrutura e infraestrutura do condomínio.",
+      link: "https://fazendadagrama.short.gy/proghome-detalhesinfra"
     },
   ];
 
@@ -62,16 +77,20 @@ export function MenuGrid() {
             {item.icon}
             <span className="text-center" style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 600 }}>{item.title}</span>
           </button>
+
+          
+          
         ))}
+        <button
+          onClick={() => setShowEmergency(true)}
+          className="w-full bg-gradient-to-br from-[#F85C5C] to-[#E63939] hover:from-[#F74444] hover:to-[#D82929] text-white rounded-2xl p-5 flex items-center justify-center gap-3 transition-all transform active:scale-95 shadow-lg hover:shadow-xl"
+        >
+          <AlertTriangle className="w-8 h-8" />
+          <span className="text-center" style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 600 }}>Manual de Emergência</span>
+        </button>        
       </div>
       
-      <button
-        onClick={() => setShowEmergency(true)}
-        className="w-full bg-gradient-to-br from-[#F85C5C] to-[#E63939] hover:from-[#F74444] hover:to-[#D82929] text-white rounded-2xl p-5 flex items-center justify-center gap-3 transition-all transform active:scale-95 shadow-lg hover:shadow-xl"
-      >
-        <AlertTriangle className="w-8 h-8" />
-        <span style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 600 }}>Manual de Emergência</span>
-      </button>
+
 
       <Dialog open={selectedItem !== null} onOpenChange={() => setSelectedItem(null)}>
         <DialogContent className="max-w-md">
@@ -81,8 +100,19 @@ export function MenuGrid() {
               {selectedItem?.title}
             </DialogTitle>
           </DialogHeader>
-          <div className="mt-4" style={{ fontFamily: "'Poppins', sans-serif" }}>
-            {selectedItem?.content}
+          <div className="mt-4 space-y-4" style={{ fontFamily: "'Poppins', sans-serif" }}>
+            <p>{selectedItem?.content}</p>
+            {selectedItem?.link && (
+              <a
+                href={selectedItem.link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block w-full bg-gradient-to-br from-[#0D4A5C] to-[#062935] hover:from-[#0A3A4A] hover:to-[#041D26] text-white rounded-lg py-3 px-4 text-center transition-all transform active:scale-95 shadow-md hover:shadow-lg"
+                style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 600 }}
+              >
+                Ver {selectedItem.title}
+              </a>
+            )}
           </div>
         </DialogContent>
       </Dialog>
