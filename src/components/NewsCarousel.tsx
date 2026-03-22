@@ -3,6 +3,9 @@ import { useState, useEffect } from "react";
 import { ImageWithFallback } from "./figma/ImageWithFallback";
 import { useNavigate } from "react-router-dom";
 
+// ---------------------- //
+//       TYPES           //
+// ---------------------- //
 
 interface WPTitle {
   rendered: string;
@@ -12,15 +15,13 @@ interface WPContent {
   rendered: string;
 }
 
-interface WPMediaDetails {
+interface WPEmbeddedMedia {
+  id: number;
   source_url: string;
 }
 
 interface WPEmbedded {
-  ["wp:featuredmedia"]?: Array<{
-    id: number;
-    source_url: string;
-  }>;
+  ["wp:featuredmedia"]?: WPEmbeddedMedia[];
 }
 
 interface WPPost {
@@ -32,41 +33,76 @@ interface WPPost {
   _embedded?: WPEmbedded;
 }
 
-interface NewsItem {
+export interface NewsItem {
   id: number;
   title: string;
   image: string;
   description: string;
 }
 
+// ---------------------- //
+//       COMPONENT        //
+// ---------------------- //
+
 export function NewsCarousel() {
   const [news, setNews] = useState<NewsItem[]>([]);
-  const [currentIndex, setCurrentIndex] = useState<number>(0);
-  const [progress, setProgress] = useState<number>(0);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [progress, setProgress] = useState(0);
+  const [loading, setLoading] = useState(true);
 
-  const API_URL = `${import.meta.env.VITE_API_URL}/wp-json/wp/v2/posts?_embed&per_page=5`;
   const navigate = useNavigate();
+  const API_URL = `${import.meta.env.VITE_API_URL}/wp-json/wp/v2/posts?_embed&per_page=5`;
 
-  // Load posts from WP
+  const CACHE_KEY = "news_cache";
+  const CACHE_TIME = 10 * 60 * 1000; // 10 minutos
+
+  // ---------------------- //
+  //     LOAD + CACHE       //
+  // ---------------------- //
   useEffect(() => {
     async function loadPosts() {
       try {
+        // 1. Verificar cache
+        const cached = localStorage.getItem(CACHE_KEY);
+
+        if (cached) {
+          const parsed = JSON.parse(cached) as {
+            expires: number;
+            data: NewsItem[];
+          };
+
+          if (Date.now() < parsed.expires) {
+            setNews(parsed.data);
+            setLoading(false);
+            return;
+          }
+        }
+
+        // 2. Buscar da API
         const res = await fetch(API_URL);
         const data: WPPost[] = await res.json();
 
         const mapped: NewsItem[] = data.map((post) => ({
           id: post.id,
           title: post.title.rendered,
-          description: post.excerpt.rendered.replace(/<[^>]+>/g, ""), // remove tags HTML
+          description: post.excerpt.rendered.replace(/<[^>]+>/g, ""),
           image:
-            post._embedded?.["wp:featuredmedia"]?.[0]?.source_url ||
+            post._embedded?.["wp:featuredmedia"]?.[0]?.source_url ??
             "https://via.placeholder.com/900x600?text=Sem+Imagem",
         }));
 
+        // 3. Salvar no cache
+        localStorage.setItem(
+          CACHE_KEY,
+          JSON.stringify({
+            expires: Date.now() + CACHE_TIME,
+            data: mapped,
+          })
+        );
+
         setNews(mapped);
       } catch (error) {
-        console.error("Erro ao carregar posts:", error);
+        console.error("Erro ao carregar notícias:", error);
       } finally {
         setLoading(false);
       }
@@ -75,7 +111,10 @@ export function NewsCarousel() {
     loadPosts();
   }, []);
 
-  // Auto-advance like Instagram stories
+  // ---------------------- //
+  //     AUTO CARROSSEL     //
+  // ---------------------- //
+
   useEffect(() => {
     if (news.length === 0) return;
 
@@ -83,10 +122,7 @@ export function NewsCarousel() {
     const interval = 50;
 
     const progressTimer = setInterval(() => {
-      setProgress((prev) => {
-        if (prev >= 100) return 0;
-        return prev + 100 / (duration / interval);
-      });
+      setProgress((prev) => (prev >= 100 ? 0 : prev + 100 / (duration / interval)));
     }, interval);
 
     const slideTimer = setTimeout(() => {
@@ -99,6 +135,10 @@ export function NewsCarousel() {
       clearTimeout(slideTimer);
     };
   }, [currentIndex, news]);
+
+  // ---------------------- //
+  //       RENDER           //
+  // ---------------------- //
 
   if (loading) {
     return <p className="text-white text-center">Carregando notícias...</p>;
@@ -145,18 +185,18 @@ export function NewsCarousel() {
         </div>
 
         {/* Slide */}
-        <div className="relative h-72 cursor-pointer"
-  onClick={() => navigate(`/noticia/${news[currentIndex].id}`)}>
+        <div
+          className="relative h-72 cursor-pointer"
+          onClick={() => navigate(`/noticia/${news[currentIndex].id}`)}
+        >
           <ImageWithFallback
             src={news[currentIndex].image}
             alt={news[currentIndex].title}
             className="w-full h-full object-cover"
           />
 
-          {/* Overlay */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
 
-          {/* Content */}
           <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
             <h3
               className="text-xl mb-2"

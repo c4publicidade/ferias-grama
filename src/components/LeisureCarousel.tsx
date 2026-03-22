@@ -1,45 +1,117 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { ImageWithFallback } from "./figma/ImageWithFallback";
 
-interface LeisureArea {
+interface WPText {
+  rendered: string;
+}
+
+export interface LeisureArea {
   id: number;
-  title: { rendered: string };
-  content: { rendered: string };
+  title: WPText;
+  content: WPText;
   featured_media_url: string | null;
   area_image: string | null;
+}
+
+interface CleanLeisureArea extends LeisureArea {
+  cleanDescription: string;
+  finalImage: string;
+}
+
+// 🔥 Cache global de imagens (fica na memória)
+const imageCache: Record<string, HTMLImageElement> = {};
+
+// 🔥 Função para pré-carregar imagens com cache real
+function preloadImage(url: string): Promise<void> {
+  return new Promise((resolve) => {
+    if (imageCache[url]) {
+      resolve(); // já está em cache
+      return;
+    }
+
+    const img = new Image();
+    img.src = url;
+
+    img.onload = () => {
+      imageCache[url] = img; // salva no cache
+      resolve();
+    };
+
+    img.onerror = () => resolve();
+  });
 }
 
 export function LeisureCarousel() {
   const [areas, setAreas] = useState<LeisureArea[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [isReady, setIsReady] = useState(false);
 
+  // 📌 1. Buscar áreas e pré-carregar todas as imagens
   useEffect(() => {
-    fetch(`${import.meta.env.VITE_API_URL}/wp-json/wp/v2/areas-de-lazer?per_page=100`)
-      .then((res) => res.json())
-      .then((data) => {
-        setAreas(data);
-      });
+    async function loadData() {
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL}/wp-json/wp/v2/areas-de-lazer?per_page=100`
+      );
+
+      const data: LeisureArea[] = await res.json();
+      setAreas(data);
+
+      // Criar lista de URLs
+      const urls = data.map((area) =>
+        area.area_image ||
+        area.featured_media_url ||
+        "https://via.placeholder.com/1200x600?text=Sem+imagem"
+      );
+
+      // Pré-carregar todas as imagens
+      await Promise.all(urls.map((url) => preloadImage(url)));
+
+      console.log("✨ Todas as imagens pré-carregadas no cache!");
+    }
+
+    loadData();
   }, []);
 
-  if (areas.length === 0) {
+  // 📌 2. Limpar HTML + definir imagem final
+  const cleanAreas: CleanLeisureArea[] = useMemo(() => {
+    return areas.map((area) => ({
+      ...area,
+      cleanDescription: area.content.rendered.replace(/<[^>]+>/g, ""),
+      finalImage:
+        area.area_image ||
+        area.featured_media_url ||
+        "https://via.placeholder.com/1200x600?text=Sem+imagem",
+    }));
+  }, [areas]);
+
+  // 📌 3. Controle da troca de slide com preload via cache
+  useEffect(() => {
+    if (cleanAreas.length === 0) return;
+
+    setIsReady(false);
+
+    const url = cleanAreas[currentIndex].finalImage;
+
+    if (imageCache[url]) {
+      // Se estiver em cache → instantâneo
+      setIsReady(true);
+    } else {
+      preloadImage(url).then(() => setIsReady(true));
+    }
+  }, [currentIndex, cleanAreas]);
+
+  if (cleanAreas.length === 0) {
     return <p className="text-white text-center">Carregando...</p>;
   }
 
-  const area = areas[currentIndex];
-
-  const image =
-    area.area_image ||
-    area.featured_media_url ||
-    "https://via.placeholder.com/1200x600?text=Sem+imagem";
-
-  const description = area.content.rendered.replace(/<[^>]+>/g, "");
+  const area = cleanAreas[currentIndex];
 
   const nextSlide = () =>
-    setCurrentIndex((prev) => (prev + 1) % areas.length);
+    setCurrentIndex((prev) => (prev + 1) % cleanAreas.length);
 
   const prevSlide = () =>
-    setCurrentIndex((prev) => (prev - 1 + areas.length) % areas.length);
+    setCurrentIndex((prev) => (prev - 1 + cleanAreas.length) % cleanAreas.length);
 
   return (
     <div className="mb-8">
@@ -51,20 +123,29 @@ export function LeisureCarousel() {
           textShadow: "2px 2px 4px rgba(0, 0, 0, 0.5)",
         }}
       >
-        AS ÁREAS DE LAZER QUE FAZEM AS FÉRIAS MAIS DIVERTIDAS
+        AS ÁREAS DE LAZER QUE FAZEM OS DIAS  MAIS DIVERTIDAS
       </h2>
 
       <div className="relative rounded-2xl overflow-hidden shadow-xl">
         <div className="relative h-72">
+          {/* Imagem com fade suave */}
           <ImageWithFallback
-            src={image}
+            src={area.finalImage}
             alt={area.title.rendered}
-            className="w-full h-full object-cover"
+            className={`w-full h-full object-cover transition-opacity duration-500 ${
+              isReady ? "opacity-100" : "opacity-0"
+            }`}
           />
 
+          {/* Overlay */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
 
-          <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
+          {/* Texto */}
+          <div
+            className={`absolute bottom-0 left-0 right-0 p-6 text-white transition-opacity duration-500 ${
+              isReady ? "opacity-100" : "opacity-0"
+            }`}
+          >
             <h3
               className="text-white text-xl mb-2"
               style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 700 }}
@@ -76,11 +157,12 @@ export function LeisureCarousel() {
               className="text-sm opacity-90"
               style={{ fontFamily: "'Poppins', sans-serif" }}
             >
-              {description}
+              {area.cleanDescription}
             </p>
           </div>
         </div>
 
+        {/* Botões */}
         <button
           onClick={prevSlide}
           className="absolute left-6 top-1/2 -translate-y-1/2 bg-white hover:bg-gray-100 rounded-full p-3 shadow-xl transition-all z-10"
@@ -98,8 +180,9 @@ export function LeisureCarousel() {
         </button>
       </div>
 
+      {/* Dots */}
       <div className="flex justify-center gap-2 mt-6">
-        {areas.map((_, index) => (
+        {cleanAreas.map((_, index) => (
           <button
             key={index}
             onClick={() => setCurrentIndex(index)}

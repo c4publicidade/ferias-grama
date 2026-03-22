@@ -5,7 +5,7 @@ import logo from "../assets/ferias-logo.avif";
 import beachBackground from "../assets/bg-ferias.webp";
 import { BeachElements } from "./BeachElements";
 import { Footer } from "./Footer";
-
+import { MenuGrid } from "./MenuGrid";
 const decodeHtml = (html: string) => {
   const txt = document.createElement("textarea");
   txt.innerHTML = html;
@@ -51,28 +51,21 @@ export default function NewsPage() {
     fetchPost();
   }, [id]);
 
-  if (loading) {
-    return <div className="text-center mt-20 text-white">Carregando...</div>;
-  }
-
-  if (!post) {
-    return <div className="text-center mt-20 text-white">Notícia não encontrada.</div>;
-  }
-
   const featuredImage =
-   post._embedded?.["wp:featuredmedia"]?.[0]?.source_url || "";
+    post?._embedded?.["wp:featuredmedia"]?.[0]?.source_url || "";
 
   return (
-    <div className="min-h-screen relative overflow-hidden">
 
-      {/* Fundo animado */}
+    <div className="min-h-screen relative overflow-hidden">
+      
+      {/* Animated Beach Background */}
       <motion.div
         className="fixed inset-0 z-0"
         style={{
           backgroundImage: `url('${beachBackground}')`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          backgroundRepeat: "no-repeat",
+          backgroundSize: 'cover',
+          backgroundPosition: 'center 0%',
+          backgroundRepeat: 'no-repeat'
         }}
         animate={{
           scale: [1, 1.05, 1],
@@ -86,14 +79,20 @@ export default function NewsPage() {
         }}
       />
 
-      <div className="fixed inset-0 pointer-events-none z-1"
+      {/* Light overlay for better content visibility - REDUCED */}
+      <div 
+        className="fixed inset-0 pointer-events-none z-1"
         style={{
-          background: "linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(255,247,230,0.15) 100%)"
+          background: 'linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(255,247,230,0.15) 100%)'
         }}
       />
-
+      
+      {/* Floating Decorations - TEMPORARIAMENTE DESABILITADO */}
+      {/* <FloatingDecorations /> */}
+      
+      {/* Beach Elements - Animated PNGs */}
       <BeachElements />
-
+      
       {/* Header - Ocean Section */}
       <div 
         className="relative pt-10 pb-40 px-4 overflow-hidden"
@@ -112,40 +111,43 @@ export default function NewsPage() {
               />
             </a>
           </div>
-
         </div>
         
         {/* Beach Waves Transition - REMOVIDO */}
         {/* <BeachWaves /> */}
-      </div>      
+      </div>
 
-      {/* Conteúdo */}
-      <div className="max-w-md mx-auto px-4 py-10 relative z-20 mb-8">
+      {/* Main Content - Beach/Sand Section */}
+      <div className="max-w-md mx-auto px-4 -mt-24 pb-12 relative z-20">
 
-        {/* Imagem destacada */}
-        {featuredImage && (
+        {/* Menu Grid */}
+        <div className="mb-8">
+          <MenuGrid />
+        </div>
+         {featuredImage && (
           <img
             src={featuredImage}
-            alt={post.title.rendered}
+            alt={post?.title?.rendered || ""}
             className="rounded-2xl shadow-xl mb-6"
           />
         )}
 
-        <div className="box-txt bg-white/20 backdrop-blur-md rounded-2xl shadow-xl p-5">
-          {/* Título */}
-            <h1
-              className="text-3xl font-bold text-black mb-4">
+        {post && (
+          <div className="box-txt bg-white/20 backdrop-blur-md rounded-2xl shadow-xl p-5">
+            <h1 className="text-3xl font-bold text-black mb-4">
               {decodeHtml(post.title.rendered)}
             </h1>
 
-            {/* Conteúdo */}
             <div
               className="mb-8 prose prose-invert max-w-none text-black"
               dangerouslySetInnerHTML={{ __html: post.content.rendered }}
             />
-        </div>
+          </div>
+        )}
+
       </div>
 
+      {/* Footer */}
       <Footer />
     </div>
   );

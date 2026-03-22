@@ -105,7 +105,7 @@ export function LeisureCarousel() {
     return (
       <div className="mb-8">
         <h2 className="text-center mb-6 text-white text-xl px-4" style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 600, textShadow: "2px 2px 4px rgba(0, 0, 0, 0.5)" }}>
-          AS ÁREAS DE LAZER QUE FAZEM AS FÉRIAS MAIS DIVERTIDAS
+          AS ÁREAS DE LAZER QUE FAZEM OS DIAS  MAIS DIVERTIDAS
         </h2>
         <div className="relative rounded-2xl overflow-hidden shadow-xl bg-gray-200 h-72 flex items-center justify-center">
           <div className="text-center">
@@ -123,7 +123,7 @@ export function LeisureCarousel() {
     return (
       <div className="mb-8">
         <h2 className="text-center mb-6 text-white text-xl px-4" style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 600, textShadow: "2px 2px 4px rgba(0, 0, 0, 0.5)" }}>
-          AS ÁREAS DE LAZER QUE FAZEM AS FÉRIAS MAIS DIVERTIDAS
+          AS ÁREAS DE LAZER QUE FAZEM OS DIAS  MAIS DIVERTIDAS
         </h2>
         <div className="relative rounded-2xl overflow-hidden shadow-xl bg-gray-100 h-72 flex items-center justify-center">
           <p className="text-gray-600 px-4" style={{ fontFamily: "'Poppins', sans-serif" }}>
@@ -137,7 +137,7 @@ export function LeisureCarousel() {
   return (
     <div className="mb-8">
       <h2 className="text-center mb-6 text-white text-xl px-4" style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 600, textShadow: "2px 2px 4px rgba(0, 0, 0, 0.5)" }}>
-        AS ÁREAS DE LAZER QUE FAZEM AS FÉRIAS MAIS DIVERTIDAS
+        AS ÁREAS DE LAZER QUE FAZEM OS DIAS  MAIS DIVERTIDAS
       </h2>
 
       <div className="relative rounded-2xl overflow-hidden shadow-xl">

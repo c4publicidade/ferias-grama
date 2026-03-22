@@ -5,31 +5,23 @@ import { NewsCarousel } from "./NewsCarousel";
 import { Footer } from "./Footer";
 import { BeachElements } from "./BeachElements";
 import { motion } from "motion/react";
-import logo from "../assets/ferias-logo.avif";
-import beachBackground from "../assets/bg-ferias.webp";
+import logo from "../assets/logo-grama.avif";
+import beachBackground from "../assets/background-grama.webp";
 import sunglasses from "../assets/sunglasses.avif";
+import FeriasModal from "./FeriasModal";
 
 export default function App() {
   return (
     <div className="min-h-screen relative overflow-hidden">
-      {/* Animated Beach Background */}
-      <motion.div
+      
+      {/* Static Beach Background */}
+      <div
         className="fixed inset-0 z-0"
         style={{
           backgroundImage: `url('${beachBackground}')`,
           backgroundSize: 'cover',
           backgroundPosition: 'center 0%',
           backgroundRepeat: 'no-repeat'
-        }}
-        animate={{
-          scale: [1, 1.05, 1],
-          x: [0, -10, 0, 10, 0],
-          y: [0, -5, 0, 5, 0],
-        }}
-        transition={{
-          duration: 20,
-          repeat: Infinity,
-          ease: "easeInOut",
         }}
       />
 
@@ -45,7 +37,7 @@ export default function App() {
       {/* <FloatingDecorations /> */}
       
       {/* Beach Elements - Animated PNGs */}
-      <BeachElements />
+      {/*<BeachElements />*/}
       
       {/* Header - Ocean Section */}
       <div 
@@ -76,8 +68,9 @@ export default function App() {
 
       {/* Main Content - Beach/Sand Section */}
       <div className="max-w-md mx-auto px-4 -mt-24 pb-12 relative z-20">
+      <FeriasModal />        
         {/* Sunglasses - Between Weather and Menu */}
-        <div className="flex justify-center mb-4 relative z-5">
+       {/* <div className="flex justify-center mb-4 relative z-5">
           <motion.img
             src={sunglasses}
             alt=""
@@ -92,7 +85,7 @@ export default function App() {
               ease: "easeInOut",
             }}
           />
-        </div>
+        </div>*/}
         
         {/* Menu Grid */}
         <div className="mb-8">
